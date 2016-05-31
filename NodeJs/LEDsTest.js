@@ -20,7 +20,7 @@ function doLEDs(){
 	    pixelData[i] = (getRandomInt(0,255), getRandomInt(0,255), getRandomInt(0,255));
 
 
-        do_init(do_render);
+        do_render(pixelData);
 
 	    
 	    
