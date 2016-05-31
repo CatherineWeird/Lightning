@@ -18,8 +18,12 @@ function doLEDs(){
 
     for(var i = 0; i < NUM_LEDS; i++){
 	    pixelData[i] = (getRandomInt(0,255), getRandomInt(0,255), getRandomInt(0,255));
-	    ws281x.render(pixelData);
-	    do_init(doLEDs);
+
+
+        do_init(do_render);
+
+	    
+	    
 
     }
 
@@ -41,6 +45,17 @@ function do_init(callback){
 
 
 }
+
+function do_render(data){
+
+	console.log("do_render");
+
+	ws281x.render(data);
+
+	next();
+}
+
+
 
 do_init(doLEDs);
 
