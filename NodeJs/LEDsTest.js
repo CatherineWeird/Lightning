@@ -10,7 +10,7 @@ var brightness = 128;
 
 function doLEDs(){
 
-	ws281x.init(NUM_LEDS);
+	
 
     ws281x.setBrightness(brightness);
 
@@ -31,6 +31,15 @@ function getRandomInt(min, max){
 
 }
 
-doLEDs();
+function do_init(callback){
+
+	ws281x.init(NUM_LEDS);
+
+	callback
+
+
+}
+
+do_init(doLEDs);
 
 
