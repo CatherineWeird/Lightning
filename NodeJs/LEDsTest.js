@@ -37,7 +37,7 @@ function do_init(callback){
 
 	ws281x.init(NUM_LEDS);
 
-	callback
+	callback();
 
 
 }
