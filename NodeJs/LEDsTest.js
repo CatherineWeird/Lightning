@@ -19,7 +19,7 @@ function doLEDs(){
     for(var i = 0; i < NUM_LEDS; i++){
 	    pixelData[i] = (getRandomInt(0,255), getRandomInt(0,255), getRandomInt(0,255));
 	    ws281x.render(pixelData);
-	    ws281x.init(NUM_LEDS);
+	    do_init(doLEDs);
 
     }
 
