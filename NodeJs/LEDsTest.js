@@ -10,8 +10,12 @@ ws281x.init(NUM_LEDS);
 
 ws281x.setBrightness(brightness);
 
+ws281x.reset();
+
 for(var i = 0; i < NUM_LEDS; i++){
 	pixelData[i] = (getRandomInt(0,255), getRandomInt(0,255), getRandomInt(0,255));
+	ws281x.render(pixelData);
+
 }
 
 
