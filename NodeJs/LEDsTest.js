@@ -33,6 +33,8 @@ function getRandomInt(min, max){
 
 function do_init(callback){
 
+	console.log("do_init");
+
 	ws281x.init(NUM_LEDS);
 
 	callback
