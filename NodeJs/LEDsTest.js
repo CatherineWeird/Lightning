@@ -11,7 +11,7 @@ var brightness = 128;
 function doLEDs(){
 
 	
-
+    console.log("doLEDs");
     ws281x.setBrightness(brightness);
 
     ws281x.reset();
