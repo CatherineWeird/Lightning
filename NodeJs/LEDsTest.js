@@ -19,7 +19,7 @@ function doLEDs(){
     ws281x.init(brightness);
 
     for(var i = 0; i < NUM_LEDS; i++){
-	    pixelData[i] = (getRandomInt(0,255), getRandomInt(0,255), getRandomInt(0,255));
+	    pixelData[i] = (0xff0000);
 	    ws281x.render(pixelData);
         
 	   
