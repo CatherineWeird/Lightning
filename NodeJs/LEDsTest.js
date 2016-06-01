@@ -15,10 +15,13 @@ function doLEDs(){
     
 
     ws281x.reset();
+    ws281x.init(NUM_LEDS);
+    ws281x.init(brightness);
 
     for(var i = 0; i < NUM_LEDS; i++){
 	    pixelData[i] = (getRandomInt(0,255), getRandomInt(0,255), getRandomInt(0,255));
-        do_render(pixelData);
+	    ws281x.render(pixelData);
+        
 	   
 
     }
