@@ -66,6 +66,6 @@ function do_render(data){
 
 
 
-doLEDs();
+do_init();
 
 
