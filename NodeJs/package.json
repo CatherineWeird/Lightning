@@ -1,10 +1,10 @@
 {
-	"name": "Lightning",
-	"description": "visualise lightning data",
-	"version": "0.0.1",
-	"private": true,
-	"dependencies": {
-	    "express": "4.x"
-
-	}
+  "name": "Lightning",
+  "description": "visualise lightning data",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "4.x",
+    "rpi-ws281x-native": "^0.8.1"
+  }
 }
