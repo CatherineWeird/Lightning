@@ -4,6 +4,7 @@ var http = require('http');
 var fs = require('fs');
 
 var lightning = require('./getData.js');
+var showLEDs = require('./showLEDs.js');
 
 app.set('port', process.env.PORT  || 3000);
 
@@ -30,6 +31,9 @@ app.get('/lightningdata', function(req,res){
     	    res.type('text/plain');
     	    res.status(200);
     	    res.send('This is the lightning data'+data);
+
+    	    showLEDs.showLEDs();
+    	    showLEDs.LEDsOff();
 
     }
 
