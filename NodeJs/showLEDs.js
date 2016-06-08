@@ -1,7 +1,8 @@
 var ws2812x = require('rpi-ws281x-native');
+var fs = require('fs');
 
 
-var NUM_LEDs;
+var NUM_LEDS = 64;
 
 
 var pixelData = new Uint32Array(NUM_LEDS);
@@ -13,15 +14,28 @@ var LED_strip;
 
 var LED_data = {};
 
+ws2812x.init(NUM_LEDS);
+ws2812x.reset();
 
-exports.processData = function(){
+
+// ---- trap the SIGINT and reset before exit
+process.on('SIGINT', function () {
+  ws2812x.reset();
+  process.nextTick(function () { process.exit(0); });
+});
+
+
+function processData(callback){
+	console.log('Process Data');
 
 	fs.readFile('data/current.json',  function(err, myJson) {
 
 	if (err){
-		console.log(err);
+		console.log('ERROR');
+		//console.log(err);
 	};
     var parsedData = JSON.parse(myJson);
+        console.log('parsedData ');
 	    //console.log(parsedData);
     
         //Sets which of the 4 Neopixel strips the lightning strike will be sent to.
@@ -56,50 +70,95 @@ exports.processData = function(){
 		         distance =  Math.sqrt((parsedData[objId].long* parsedData[objId].long) +(parsedData[objId].lat * parsedData[objId].lat));
 		         
 		         //Map the distance value to represent a individual LED on the selected strip.
-		         distance = Math.floor(distance.map(0,125.86,0,63));
+		         //distance = Math.floor(distance.map(0,125.86,0,63));
 
-		         console.log('LED_strip = '+LED_strip);
+		         //console.log('LED_strip = '+LED_strip);
 
 		         LED_data[i]= ({LED_strip,distance});
-		         console.log(LED_data[i]);
+		         //console.log(LED_data[i]);
 
 		}
-
 		
+		callback(err,LED_data);
+	
 
 	});
-
-	return LED_data;
-
-	
 
 }
 
 
 
 function runLEDs(){
+	
 
 
 	processData( function(err,data){
+		console.log('doing processData');
+		
 
 		if (err){
 				console.log(err);
 			}
 		else {
 
-			console.log(Object.keys(data).length);
-
-			for (var l in data){
+			//console.log(Object.keys(data).length);
+			//console.log(data);
+			ws2812x.init(NUM_LEDS);
+			//pixelData[pixel] = rgb2Int(0,0,255);
+			
+            //ws2812x.render(pixelData);
+            
+            
+         for (var l in data){
 				console.log(l, data[l].distance);
+				
+				
+				for (var i = 0; i <= NUM_LEDS ; i++){
+					
+				    var pixel = (data[l].distance);
+				    pixel = Math.floor(pixel.map(0,125.86,0,63));
+				    console.log('pixel = ' + pixel);
+				    
+					
+					if (i === pixel ){
+						
 
-				var pixel = (data[l].LED_strip * 64) + distance;
-				console.log('pixel = ' + pixel);
+				        
+				        pixelData[i] = rgb2Int(0,0,255);
+				        
+				        
+						
+						
+					}
+					
+					else {
+						
+						pixelData[i] = rgb2Int(0,0,0);
+						
+						
+						
+					}
+					
+					
+					
+					
+				}
+				
 
-				pixelData[pixel] = rgb2Int(0,0,255);
+				//var pixel = (data[l].LED_strip * 64) + distance;
+				
+				
+				
+				ws2812x.render(pixelData);
+				
+
+
+
+
 			}
 
 
-
+			
 
 		}
 
@@ -146,10 +205,29 @@ exports.LEDsOff = function(callback){
 
 }
 
-
-
-
-
 Number.prototype.map = function (in_min, in_max, out_min, out_max) {
   return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
+function rgb2Int(r, g, b) {
+	
+  return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
+}
+
+function doinit(){
+	
+	ws2812x.init(NUM_LEDS);
+	ws2812x.setBrightness(brightness);
+	
+	ws2812x.reset();
+	
+	
+	runLEDs();
+	
+}
+
+doinit();
+console.log('done an init of LEDs');
+
+
+
