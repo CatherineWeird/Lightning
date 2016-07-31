@@ -1,18 +1,7 @@
-
-
-var Parser = require("stream-json/Parser");
-var parser = new Parser();
-var Streamer = require("stream-json/Streamer");
-var streamer = new Streamer();
-
-var Packer = require("stream-json/Packer");
-var packer = new Packer({packKeys: true, packStrings: true, packNumbers: true});
+var Combo = require("stream-json/Combo");
+var combo = new Combo({packKeys: true, packStrings: true, packNumbers: true});
 
 var fs = require("fs");
-
-
-var result = [];
-
 
 var currentChunk;
 
@@ -22,9 +11,10 @@ var unixTime;
 
 
 exports.parseJson = function(callback){
-
-
-
+	
+	var result = [];
+	
+	console.log('Parse JSON data');
 
 
 	function LightningStrike(unixTime,lat,long){
@@ -40,7 +30,16 @@ exports.parseJson = function(callback){
 
 
 
-	var pipeline = fs.createReadStream("data/current.json").pipe(parser).pipe(streamer).pipe(packer);
+	//var pipeline = fs.createReadStream("data/current.json").pipe(parser).pipe(streamer).pipe(packer);
+	var pipeline = fs.createReadStream("data/current.json").pipe(combo);
+	
+    pipeline.on("error",function(Error){
+		
+		console.log(Error);
+		
+	});
+	
+	
 
 
 	pipeline.on("data", function(chunk){
@@ -52,7 +51,7 @@ exports.parseJson = function(callback){
 
 	    	if(chunk.value === 'unixTime'){
 
-	    		//unixTime = true;
+	    		
 	    		currentChunk = 'unixTime';
 
 	    		
@@ -63,7 +62,7 @@ exports.parseJson = function(callback){
 
 	    if(chunk.name === 'numberValue'){
 	    	if (currentChunk === 'unixTime'){
-	    		console.log('unixTime = '+ chunk.value);
+	    		//console.log('unixTime = '+ chunk.value);
 	    		currentChunk = false;
 
 	    		unixTime = chunk.value;
@@ -85,7 +84,7 @@ exports.parseJson = function(callback){
 
 	    if(chunk.name === 'numberValue'){
 	    	if (currentChunk === 'lat'){
-	    		console.log('lat = '+ chunk.value);
+	    		//console.log('lat = '+ chunk.value);
 	    		currentChunk = false;
 
 	    		lat = chunk.value;
@@ -110,19 +109,51 @@ exports.parseJson = function(callback){
 
 	    if(chunk.name === 'numberValue'){
 	    	if (currentChunk === 'long'){
-	    		console.log('long = '+ chunk.value);
+	    		//console.log('long = '+ chunk.value);
 	    		currentChunk === false;
 
 	    		long = chunk.value;
+
 	    		result.push(new LightningStrike(unixTime,lat,long));
-	    		console.log(result.length);
+	    		
 
 	    	}
 	    }
 
 
-
 	});
+	
+	pipeline.on("end", function(){
+		
+		console.log("end event called");
+		pipeline.unpipe(combo);
+	
+		
+	});
+	
+		pipeline.on("finish", function(){
+		
+		console.log("finished parsing");
+		
+		
+		
+		
+		
+		
+		
+		callback(result);
+		
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+
 
 
 }

@@ -2,7 +2,7 @@ var ws2812x = require('rpi-ws281x-native');
 var fs = require('fs');
 
 
-var NUM_LEDS = 64;
+var NUM_LEDS = 256;
 
 
 var pixelData = new Uint32Array(NUM_LEDS);
@@ -12,7 +12,7 @@ var brightness = 128;
 
 var LED_strip;
 
-var LED_data = {};
+var LED_data = [];
 
 ws2812x.init(NUM_LEDS);
 ws2812x.reset();
@@ -25,84 +25,75 @@ process.on('SIGINT', function () {
 });
 
 
-function processData(callback){
-	console.log('Process Data');
+function processData(callback,lightningStrikeData){
+	
+	
+	
+	console.log('ProcessData');
+	//console.log(lightningStrikeData);
+	
+	for (lightningStrike of lightningStrikeData){
+		
 
-	fs.readFile('data/current.json',  function(err, myJson) {
-
-	if (err){
-		console.log('ERROR');
-		//console.log(err);
-	};
-    var parsedData = JSON.parse(myJson);
-        console.log('parsedData ');
-	    //console.log(parsedData);
+	    
     
         //Sets which of the 4 Neopixel strips the lightning strike will be sent to.
-		for(var i = 0; i < Object.keys(parsedData).length; i++){
+        
+        
 
-			var objId = Object.getOwnPropertyNames(parsedData)[i];
 			
 
-			         if (parsedData[objId].long > 0 && parsedData[objId].lat > 0){
+			if (lightningStrike.long > 0 && lightningStrike.lat > 0){
 		           
 		           LED_strip = 0;
 		           
 		           
 		         }
-		         else if (parsedData[objId].long < 0 && parsedData[objId].lat > 0){
+		         else if (lightningStrike.long < 0 && lightningStrike.lat > 0){
 		           
 		           LED_strip = 1;
 		           
 		         }
-		         else if (parsedData[objId].long < 0 && parsedData[objId].lat < 0){
+		         else if (lightningStrike.long < 0 && lightningStrike.lat < 0){
 		           
 		           LED_strip = 2;
 		           
 		         }
-		         else if (parsedData[objId].long > 0 && parsedData[objId].lat < 0){
+		         //else if (parsedData[objId].long > 0 && parsedData[objId].lat < 0)
+		         else {
 		           
 		           LED_strip = 3;
 		           
 		         }
 
 		         //Calculate distance from the Equator and Greenwhich meridian intersection
-		         distance =  Math.sqrt((parsedData[objId].long* parsedData[objId].long) +(parsedData[objId].lat * parsedData[objId].lat));
+		         distance =  Math.sqrt((lightningStrike.long* lightningStrike.long) +(lightningStrike.lat * lightningStrike.lat));
 		         
 		         //Map the distance value to represent a individual LED on the selected strip.
-		         //distance = Math.floor(distance.map(0,125.86,0,63));
+		         distance = Math.floor(distance.map(0,125.86,0,NUM_LEDS - 1));
 
-		         //console.log('LED_strip = '+LED_strip);
 
-		         LED_data[i]= ({LED_strip,distance});
-		         //console.log(LED_data[i]);
+		         LED_data.push({LED_strip,distance});
+		        
 
 		}
 		
-		callback(err,LED_data);
+		callback(LED_data);
 	
 
-	});
+	
 
 }
 
-
-
-function runLEDs(){
+exports.runLEDs = function(data){
+	
+	//console.log(data);
 	
 
 
-	processData( function(err,data){
+	processData( function(data){
 		console.log('doing processData');
-		
 
-		if (err){
-				console.log(err);
-			}
-		else {
-
-			//console.log(Object.keys(data).length);
-			//console.log(data);
 			ws2812x.init(NUM_LEDS);
 			//pixelData[pixel] = rgb2Int(0,0,255);
 			
@@ -110,25 +101,24 @@ function runLEDs(){
             
             
          for (var l in data){
-				console.log(l, data[l].distance);
+				//console.log(l, data[l].distance);
+				
+				var pixel = (data[l].LED_strip * 64) + data[l].distance
+				//console.log('pixel = ' + pixel);
 				
 				
 				for (var i = 0; i <= NUM_LEDS ; i++){
 					
 				    var pixel = (data[l].distance);
 				    pixel = Math.floor(pixel.map(0,125.86,0,63));
-				    console.log('pixel = ' + pixel);
+				    //
 				    
 					
 					if (i === pixel ){
-						
-
-				        
+				
+  
 				        pixelData[i] = rgb2Int(0,0,255);
-				        
-				        
-						
-						
+					
 					}
 					
 					else {
@@ -143,12 +133,8 @@ function runLEDs(){
 					
 					
 				}
-				
 
-				//var pixel = (data[l].LED_strip * 64) + distance;
-				
-				
-				
+					
 				ws2812x.render(pixelData);
 				
 
@@ -158,12 +144,7 @@ function runLEDs(){
 			}
 
 
-			
-
-		}
-
-
-	});
+	},data);
 	
 
 }
@@ -214,7 +195,9 @@ function rgb2Int(r, g, b) {
   return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
 }
 
-function doinit(){
+exports.initLEDs = function(data){
+	
+	processData(data);
 	
 	ws2812x.init(NUM_LEDS);
 	ws2812x.setBrightness(brightness);
@@ -222,12 +205,11 @@ function doinit(){
 	ws2812x.reset();
 	
 	
-	runLEDs();
+	
 	
 }
 
-doinit();
-console.log('done an init of LEDs');
+
 
 
 
